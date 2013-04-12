@@ -12,6 +12,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 enyo.kind({ name:"CalendarSelector",
 	classes: "enyo-unselectable",
 	published: {
+		dayNames: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
 		value: new Date(),
 		dayColorDefault: "LightSlateGray",
 		dayColorSelected: "Gold",
@@ -21,20 +22,28 @@ enyo.kind({ name:"CalendarSelector",
 		numberColorOtherMonth: "dimgrey"
 	},
 	events: {
-		onSelect: ""
+		onSelect: "",
+		onDaySet: '',
 	},
 	components:[
-		{classes: "top-day-box", components: [
-			{content: "S", classes: "top-day-names"},
-			{content: "M", classes: "top-day-names"},
-			{content: "T", classes: "top-day-names"},
-			{content: "W", classes: "top-day-names"},
-			{content: "Th", classes: "top-day-names"},
-			{content: "F", classes: "top-day-names"},
-			{content: "S", classes: "top-day-names"}
-		]},
+		{ name: 'day_names', classes: "top-day-box" },
+	 /* , components: [*/
+			//{content: "S", classes: "top-day-names"},
+			//{content: "M", classes: "top-day-names"},
+			//{content: "T", classes: "top-day-names"},
+			//{content: "W", classes: "top-day-names"},
+			//{content: "Th", classes: "top-day-names"},
+			//{content: "F", classes: "top-day-names"},
+			//{content: "S", classes: "top-day-names"}
+		//]},
 		{fit:true, name: "calVBox", kind: "CalMonth", style: "height: auto;"}
 	],
+	create: function() {
+		this.inherited(arguments);
+		for (var i = 0; i < 7; i++) {
+			this.$.day_names.createComponent({content: this.dayNames[i]});
+		}
+	},
 	rendered: function(){
 		this.inherited(arguments);
 		this.updateCalendar();
@@ -50,11 +59,26 @@ enyo.kind({ name:"CalendarSelector",
 		for (var i=0; i<rows.length; i++){
 			var cols = rows[i].getControls();
 			for (var j=0; j<cols.length; j++){
-				var c = this.getColors(this.dayArray[curIndex]);
 				cols[j].setValue(this.dayArray[curIndex]);
-				cols[j].applyStyle("background-color", c[0]);
-				cols[j].applyStyle("color", c[1]);
+				cols[j].setClassAttribute(''); // reset classes since the object isn't reset itself.
+				var c = this.getRelativeClass(this.dayArray[curIndex]);
+				cols[j].addClass(c);
 				curIndex++;
+				this.doDaySet({control: cols[j]});
+			}
+		}
+	},
+	getRelativeClass: function(x) {
+		if (x.getMonth() < this.value.getMonth()) {
+			return 'prev-month';
+		} else if (x.getMonth() > this.value.getMonth()) {
+			return 'next-month';
+		} else {
+			var today = new Date();
+			if (today.getFullYear() == x.getFullYear() && today.getDate() == x.getDate() && today.getMonth() == x.getMonth()) {
+				return 'today';
+			} else {
+				return 'day';
 			}
 		}
 	},
@@ -81,7 +105,7 @@ enyo.kind({ name:"CalendarSelector",
 		var dt = new Date(this.value);
 			dt.setDate(1);
 		var offsetNum = dt.getDay();
-		
+
 		//Use internal calculation of date...
 		var prevMonth = new Date(dt);
 			prevMonth.setDate(0);//Set to 0 to get the day before 1 -> last of previous month
@@ -90,7 +114,7 @@ enyo.kind({ name:"CalendarSelector",
 			lastOfMonth.setMonth(dt.getMonth()+1);//Next month
 			lastOfMonth.setDate(0);//Set to 0 to get the day before 1 -> last of previous month -> last of this.selectedMonth
 		var lastDayCurMonth = lastOfMonth.getDate();
-		
+
 		var day = lastDayPrevMonth-offsetNum+1;
 		for (i=0;i<offsetNum;i++){
 			this.dayArray.push(new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day, 12, 0, 0));
@@ -102,7 +126,7 @@ enyo.kind({ name:"CalendarSelector",
 			day++;
 		}
 		day = 1;
-		lastOfMonth.setMonth(lastOfMonth.getMonth()+1);
+		lastOfMonth.setDate(lastOfMonth.getDate()+1);
 		while (this.dayArray.length<42){
 			this.dayArray.push(new Date(lastOfMonth.getFullYear(), lastOfMonth.getMonth(), day, 12, 0, 0));
 			day++;
@@ -147,7 +171,7 @@ enyo.kind({ name:"CalendarSelector",
 
 enyo.kind({ name: "CalDay",
 	classes: "day-container",
-	style: "color: Black;",
+	//style: "color: Black;",
 	published: {
 		value: {}
 	},
