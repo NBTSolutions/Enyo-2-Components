@@ -1,4 +1,5 @@
 /*
+ * 
 Copyright (c) 2012, MachiApps
 All rights reserved.
 
@@ -170,11 +171,14 @@ enyo.kind({ name:"CalendarSelector",
 });
 
 enyo.kind({ name: "CalDay",
-	classes: "day-container",
+	hlasses: "day-container",
 	//style: "color: Black;",
 	published: {
 		value: {}
 	},
+    events: {
+        onDayPicked: ''
+    },
 	handlers: {
 		ontap: "tapMe"
 	},
@@ -187,6 +191,7 @@ enyo.kind({ name: "CalDay",
 	},
 	tapMe: function(inSender, inEvent){
 		this.owner.owner.owner.calTap({value: this.value});
+        this.doDayPicked({ day: this });
 		return true;
 	}
 });
