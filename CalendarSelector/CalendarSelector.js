@@ -171,7 +171,7 @@ enyo.kind({ name:"CalendarSelector",
 });
 
 enyo.kind({ name: "CalDay",
-	hlasses: "day-container",
+	classes: "day-container",
 	//style: "color: Black;",
 	published: {
 		value: {}
